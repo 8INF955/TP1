@@ -6,13 +6,15 @@
 #include "Vector.hpp"
 
 template <class T>
-struct CircleCollider : Collider {
+struct CircleCollider : public Collider<T> {
 
     Vector<T> center;
     T radius;
 
     CircleCollider(std::string name, Vector<T> center = Vector<T>(),
-            T radius = 0): Collider(name), center{center}, radius{radius} {}
+            T radius = 0): Collider<T>(name), center{center}, radius{radius} {}
+
+    AABB<T> aabb() const;
 };
 
 // Affichage d'un CircleCollider
@@ -22,5 +24,11 @@ std::ostream& operator<<(std::ostream& output, CircleCollider<T>& c) {
         << c.radius << "}";
     return output;
 }
+
+template <class T>
+AABB<T> CircleCollider<T>::aabb() const {
+    return AABB<T>(center, 2 * radius, 2 * radius);
+}
+
 
 #endif

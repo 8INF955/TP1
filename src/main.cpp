@@ -1,14 +1,12 @@
 #include <ostream>
-#include "Vector.hpp"
-#include "BoxCollider.hpp"
-#include "CircleCollider.hpp"
-#include "Intersects.hpp"
 #include <string>
+#include "Intersects.hpp"
 
 int main() {
-    BoxCollider<float> box("box", Vector<float>(2, 0), 2, 1);
-    CircleCollider<float> circle("circle", Vector<float>(0, 0), 1);
-
-    std::cout << intersects(box, circle) << std::endl;
+    Vector<float> a(0, 0);
+    Vector<float> b(1, 0);
+    Vector<float> c(1, 0);
+    Vector<float> d(2, 0);
+    std::cout << intersects(a, b, c, d) << std::endl;
     return EXIT_SUCCESS;
 }

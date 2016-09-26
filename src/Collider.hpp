@@ -4,16 +4,13 @@
 #include <iostream>
 #include "Vector.hpp"
 #include "Component.hpp"
+#include "AABB.hpp"
 
+template <class T>
 struct Collider : Component {
 
     Collider(std::string name): Component(name) {};
+    virtual AABB<T> aabb() const = 0;
 };
-
-// Affichage d'un Collider
-std::ostream& operator<<(std::ostream& output, Collider& c) {
-    output << "Collider{\"" << c.name << "\"}";
-    return output;
-}
 
 #endif

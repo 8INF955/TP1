@@ -14,6 +14,7 @@ struct Vector {
     decltype(std::atan2(std::declval<T>(), std::declval<T>())) angle() const;
 
     void normalize(T n = 1);
+    void rotate(T a);
 
     T x;
     T y;
@@ -43,6 +44,14 @@ void Vector<T>::normalize(T n) {
     n /= norm();
     x *= n;
     y *= n;
+}
+
+// Rotation d'un vecteur
+template <class T>
+void Vector<T>::rotate(T a) {
+    T tx = x;
+    x = tx * std::cos(a) - y * std::sin(a);
+    y = tx * std::sin(a) + y * std::cos(a);
 }
 
 /* **************************************************************** */
@@ -157,7 +166,6 @@ decltype(std::declval<T>()*std::declval<U>()) operator|(
         const Vector<T>& u, const Vector<U>& v) {
     return u.x * v.x + u.y * v.y;
 }
-
 
 // Produit cartésien entre deux vecteurs
 template <class T, class U>
