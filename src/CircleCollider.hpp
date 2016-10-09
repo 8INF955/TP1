@@ -11,8 +11,8 @@ struct CircleCollider : public Collider<T> {
     Vector<T> center;
     T radius;
 
-    CircleCollider(std::string name, Vector<T> center = Vector<T>(),
-            T radius = 0): Collider<T>(name), center{center}, radius{radius} {}
+    CircleCollider(Vector<T> center = Vector<T>(),
+            T radius = 0): Collider<T>(), center{center}, radius{radius} {}
 
     AABB<T> aabb() const;
 };

@@ -13,12 +13,46 @@ struct BoxCollider : public Collider<T> {
     T height;
     T alpha;
 
-    BoxCollider(std::string name, Vector<T> center = Vector<T>(), T width = 0, T height = 0,
-            T alpha = 0): Collider<T>(name), center{center}, width{width}, height{height},
+    BoxCollider(Vector<T> center = Vector<T>(), T width = 0, T height = 0,
+            T alpha = 0): Collider<T>(), center{center}, width{width}, height{height},
             alpha{alpha} {}
+
+    Vector<T> topLeft() const;
+    Vector<T> topRight() const;
+    Vector<T> bottomRight() const;
+    Vector<T> bottomLeft() const;
 
     AABB<T> aabb() const;
 };
+
+// Coins d'un BoxCollider
+template <class T>
+Vector<T> BoxCollider<T>::topLeft() const {
+    Vector<T> diag(-width / 2, -height / 2);
+    diag.rotate(alpha);
+    return diag + center;
+}
+
+template <class T>
+Vector<T> BoxCollider<T>::topRight() const {
+    Vector<T> diag(width / 2, -height / 2);
+    diag.rotate(alpha);
+    return diag + center;
+}
+
+template <class T>
+Vector<T> BoxCollider<T>::bottomRight() const {
+    Vector<T> diag(width / 2, height / 2);
+    diag.rotate(alpha);
+    return diag + center;
+}
+
+template <class T>
+Vector<T> BoxCollider<T>::bottomLeft() const {
+    Vector<T> diag(-width / 2, height / 2);
+    diag.rotate(alpha);
+    return diag + center;
+}
 
 // Affichage d'un BoxCollider
 template <class T>

@@ -12,48 +12,36 @@
 // Collision Segment Segment
 template <class T, class U, class V, class W>
 bool intersects(const Vector<T>& a, const Vector<U>& b, const Vector<V>& c, const Vector<W>& d) {
-    auto pi = atan(1) * 4;
-    auto v = b - a;
-    auto w = d - c;
-    auto aab = v.angle();
-    auto acd = w.angle();
-    auto ca = a - c;
-    auto db = b - d;
-    auto da = a - d;
-    auto cb = b - c;
-    auto aca = ca.angle();
-    auto adb = db.angle();
-    auto ada = da.angle();
-    auto acb = cb.angle();
-    std::cout << aca << " " << adb << " " << ada << " " << acb << std::endl;
-    auto orientation = (aab + acd) / pi;
-    // Les vecteurs directeurs sont parallèles
-    if(std::floor(orientation) == orientation) {
-        std::cout << "//" << std::endl;
-        // Les segments ne sont pas sur la même droite
-        if(aca != adb || ada != acb) {
-            std::cout << "=" << std::endl;
-            return false;
-        }
-        // Les segments sont sur la même droite
-        std::cout << "--" << std::endl;
-        return aca != acb || adb != ada || aca != ada || adb != acb;
+    auto ab = b - a; // AB
+    auto cd = d - c; // CD
+    auto ac = c - a; // AC
+    auto ca = -ac;
+    auto ad = d - a; // AD
+    auto cb = b - c; // CB
+
+    // Cas spécial quand les vecteurs directeurs sont parallèles
+    if((ab^cd) == 0) {
+        return contains(a, b, c) || contains(a, b, d) || contains(c, d, a) || contains(c, d, b);
     }
     else {
-        std::cout << "X" << std::endl;
-        return ((-acb) - (-aab)) * ((-adb) - (-aab)) <= 0 && (adb - (-acd)) * (ada - (-acd)) <= 0;
+        return ((ab^ac) * (ab^ad) <= 0) && ((cd^ca) * (cd^cb) <= 0);
     }
 }
 
 // Collision BoxCollider - Segment
 template <class T, class U, class V>
 bool intersects(const BoxCollider<T>& c, const Vector<U>& u, const Vector<V>& v) {
-    if(contains(c, u)) {
+    if(contains(c, u) || contains(c, v)) {
         return true;
     }
 
-    auto w = v - u;
+    auto tl = c.topLeft();
+    auto tr = c.topRight();
+    auto bl = c.bottomLeft();
+    auto br = c.bottomRight();
 
+    return intersects(tl, tr, u, v) || intersects(tr, br, u, v)
+        || intersects(br, bl, u, v) || intersects(bl, tl, u, v);
 }
 
 // Collision CircleCollider - Segment
@@ -76,9 +64,19 @@ bool intersects(const BoxCollider<T>& c1, const BoxCollider<U>& c2) {
         return false;
     }
 
-    auto d = c1.center - c2.center;
-    return std::abs(d.x) < (c1.width + c2.width) / 2
-        && std::abs(d.y) < (c1.height + c2.height) / 2;
+    auto tl1 = c1.topLeft();
+    auto tr1 = c1.topRight();
+    auto bl1 = c1.bottomLeft();
+    auto br1 = c1.bottomRight();
+    auto tl2 = c2.topLeft();
+    auto tr2 = c2.topRight();
+    auto bl2 = c2.bottomLeft();
+    auto br2 = c2.bottomRight();
+
+    return intersects(c1, tl2, tr2) || intersects(c2, tl1, tr1)
+        || intersects(c1, tr2, br2) || intersects(c2, tr1, br1)
+        || intersects(c1, br2, bl2) || intersects(c2, br1, bl1)
+        || intersects(c1, bl2, tl2) || intersects(c2, bl1, tl1);
 }
 
 // Collision CircleCollider - CircleCollider
@@ -99,18 +97,14 @@ bool intersects(const BoxCollider<T>& c1, const CircleCollider<U>& c2) {
         return false;
     }
 
-    // Le cercle touche un bord du rectangle
-    if(intersects(c2, c1.topLeftCorner(), c1.topRightCorner())
-            || intersects(c2, c1.topRightCorner(), c1.bottomRightCorner())
-            || intersects(c2, c1.bottomRightCorner(), c1.bottomLeftCorner())
-            || intersects(c2, c1.bottomLeftCorner(), c1.topLeftCorner())) {
-        std::cout << "edge !" << std::endl;
-        return true;
-    }
-    // Le rectangle contient le centre du cercle
-    std::cout << "center ?" << std::endl;
-    return contains(c1, c2.center);
-}
+    auto tl = c1.topLeft();
+    auto tr = c1.topRight();
+    auto bl = c1.bottomLeft();
+    auto br = c1.bottomRight();
 
+    return intersects(c2, tl, tr) || intersects(c2, tr, br)
+        || intersects(c2, br, bl) || intersects(c2, bl, tl)
+        || contains(c1, c2.center);
+}
 
 #endif

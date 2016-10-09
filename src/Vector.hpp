@@ -181,4 +181,15 @@ std::ostream& operator<<(std::ostream& output, const Vector<T>& u) {
     return output;
 }
 
+// Égalité entre deux vecteurs
+template <class T, class U>
+bool operator==(const Vector<T>& u, const Vector<U>& v) {
+    return u.x == v.x && u.y == v.y;
+}
+
+template <class T>
+Vector<T> operator-(const Vector<T>& v) {
+    return Vector<T>(-v.x, -v.y);
+}
+
 #endif

@@ -3,13 +3,12 @@
 
 #include <iostream>
 #include "Vector.hpp"
-#include "Component.hpp"
 #include "AABB.hpp"
 
 template <class T>
-struct Collider : Component {
+struct Collider {
 
-    Collider(std::string name): Component(name) {};
+    Collider() {};
     virtual AABB<T> aabb() const = 0;
 };
 
