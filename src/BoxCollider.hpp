@@ -23,6 +23,7 @@ struct BoxCollider : public Collider<T> {
     Vector<T> bottomLeft() const;
 
     AABB<T> aabb() const;
+    std::unique_ptr<sf::Shape> shape() const;
 };
 
 // Coins d'un BoxCollider
@@ -57,22 +58,31 @@ Vector<T> BoxCollider<T>::bottomLeft() const {
 // Affichage d'un BoxCollider
 template <class T>
 std::ostream& operator<<(std::ostream& output, BoxCollider<T>& c) {
-    output << "BoxCollider{\"" << c.name << "\" " << c.center << " " << c.width
+    output << "BoxCollider{" << c.center << " " << c.width
         << " " << c.height << " " << c.alpha << "}";
     return output;
 }
 
 template <class T>
 AABB<T> BoxCollider<T>::aabb() const {
-    auto tl = center + Vector<T>(- width / 2, height / 2);
-    auto tr = center + Vector<T>(width / 2, height / 2);
-    tl.rotate(alpha);
-    tr.rotate(alpha);
+    auto tl = topLeft() - center;
+    auto tr = topRight() - center;
 
     T w = 2 * std::max(std::abs(tl.x), std::abs(tr.x));
     T h = 2 * std::max(std::abs(tl.y), std::abs(tr.y));
 
     return AABB<T>(center, w, h);
+}
+
+template <class T>
+std::unique_ptr<sf::Shape> BoxCollider<T>::shape() const {
+    auto c = std::make_unique<sf::ConvexShape>(4);
+    c->setPoint(0, sf::Vector2f(topLeft().x, topLeft().y));
+    c->setPoint(1, sf::Vector2f(topRight().x, topRight().y));
+    c->setPoint(2, sf::Vector2f(bottomRight().x, bottomRight().y));
+    c->setPoint(3, sf::Vector2f(bottomLeft().x, bottomLeft().y));
+    std::unique_ptr<sf::Shape> s = std::move(c);
+    return s;
 }
 
 #endif

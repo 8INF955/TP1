@@ -15,6 +15,7 @@ struct Vector {
 
     void normalize(T n = 1);
     void rotate(T a);
+    Vector<T> orth();
 
     T x;
     T y;
@@ -36,6 +37,11 @@ decltype(std::declval<T>()*std::declval<T>()) Vector<T>::norm2() const {
 template <class T>
 decltype(std::atan2(std::declval<T>(), std::declval<T>())) Vector<T>::angle() const {
     return std::atan2(y, x);
+}
+
+template <class T>
+Vector<T> Vector<T>::orth() {
+    return {-y, x};
 }
 
 // Normalisation d'un vecteur - ATTENTION selon le type

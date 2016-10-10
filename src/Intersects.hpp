@@ -3,13 +3,15 @@
 
 #include <ostream>
 #include <cmath>
+#include <memory>
 #include "Vector.hpp"
 #include "Collider.hpp"
 #include "BoxCollider.hpp"
 #include "CircleCollider.hpp"
+#include "PolygonCollider.hpp"
 #include "Contains.hpp"
 
-// Collision Segment Segment
+// Collision Segment - Segment
 template <class T, class U, class V, class W>
 bool intersects(const Vector<T>& a, const Vector<U>& b, const Vector<V>& c, const Vector<W>& d) {
     auto ab = b - a; // AB
@@ -47,16 +49,42 @@ bool intersects(const BoxCollider<T>& c, const Vector<U>& u, const Vector<V>& v)
 // Collision CircleCollider - Segment
 template <class T, class U, class V>
 bool intersects(const CircleCollider<T>& c, const Vector<U>& u, const Vector<V>& v) {
+    if(contains(c, u) || contains(c, v)) {
+        return true;
+    }
     auto w = v - u;
     w.normalize();
-    auto a = (c.center - u) | w;
-    if(0 < a && a < (v - u).norm()) {
-        auto p = w * a;
-        return (p - c.center).norm() < c.radius;
+    auto a = std::abs((c.center - u) ^ w);
+    if(a < c.radius) {
+        auto p = c.center + w.orth() * a;
+        auto q = c.center - w.orth() * a;
+        w = v - u;
+        auto n2 = w.norm2();
+        return ((u-p).norm2() < n2 && (v-p).norm2() < n2)
+            || ((u-q).norm2() < n2 && (v-q).norm2() < n2);
     }
-    return contains(c, u) || contains(c, v);
+    return false;
 }
 
+// Collision PolygonCollider - Segment
+template <class T, class U, class V>
+bool intersects(const PolygonCollider<T>& c, const Vector<U>& u, const Vector<V>& v) {
+    if(contains(c, u) || contains(c, v)) {
+        return true;
+    }
+    for(auto it = c.points.begin(); it != c.points.end(); it++) {
+        auto it2 = it + 1;
+        if(it2 == c.points.end()) it2 = c.points.begin();
+        auto p = *it;
+        p.rotate(c.alpha);
+        auto q = *it2;
+        q.rotate(c.alpha);
+        if(intersects(u, v, p + c.center, q + c.center)) {
+            return true;
+        }
+    }
+    return false;
+}
 // Collision BoxCollider - BoxCollider
 template <class T, class U>
 bool intersects(const BoxCollider<T>& c1, const BoxCollider<U>& c2) {
@@ -106,5 +134,99 @@ bool intersects(const BoxCollider<T>& c1, const CircleCollider<U>& c2) {
         || intersects(c2, br, bl) || intersects(c2, bl, tl)
         || contains(c1, c2.center);
 }
+template <class T, class U>
+bool intersects(const CircleCollider<T>& c1, const BoxCollider<U>& c2) {
+    return intersects(c2, c1);
+}
+
+// Collision PolygonCollider - PolygonCollider
+template <class T, class U>
+bool intersects(const PolygonCollider<T>& c1, const PolygonCollider<U>& c2) {
+    if(c2.points.size() == 0) {
+        return false;
+    }
+    if(!intersects(c1.aabb(), c2.aabb())) {
+        return false;
+    }
+
+    auto point = c2.points[0];
+    point.rotate(c2.alpha);
+    if(contains(c1, point + c2.center)) {
+        return true;
+    }
+
+    for(auto it = c1.points.begin(); it != c1.points.end(); it++) {
+        auto it2 = it + 1;
+        if(it2 == c1.points.end()) it2 = c1.points.begin();
+        auto p = *it;
+        p.rotate(c1.alpha);
+        auto q = *it2;
+        q.rotate(c1.alpha);
+        if(intersects(c2, p + c1.center, q + c1.center)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Collision PolygonCollider - CircleCollider
+template <class T, class U>
+bool intersects(const PolygonCollider<T>& c1, const CircleCollider<U>& c2) {
+    if(!intersects(c1.aabb(), c2.aabb())) {
+        return false;
+    }
+
+    if(contains(c1, c2.center)) {
+        return true;
+    }
+
+    for(auto it = c1.points.begin(); it != c1.points.end(); it++) {
+        auto it2 = it + 1;
+        if(it2 == c1.points.end()) it2 = c1.points.begin();
+        auto p = *it;
+        p.rotate(c1.alpha);
+        auto q = *it2;
+        q.rotate(c1.alpha);
+        if(intersects(c2, p + c1.center, q + c1.center)) {
+            return true;
+        }
+    }
+    return false;
+}
+template <class T, class U>
+bool intersects(const CircleCollider<T>& c1, const PolygonCollider<U>& c2) {
+    return intersects(c2, c1);
+}
+
+// Collision PolygonCollider - BoxCollider
+template <class T, class U>
+bool intersects(const PolygonCollider<T>& c1, const BoxCollider<U>& c2) {
+    if(!intersects(c1.aabb(), c2.aabb())) {
+        return false;
+    }
+
+    auto tl = c2.topLeft();
+    if(contains(c1, tl)) {
+        return true;
+    }
+
+    for(auto it = c1.points.begin(); it != c1.points.end(); it++) {
+        auto it2 = it + 1;
+        if(it2 == c1.points.end()) it2 = c1.points.begin();
+        auto p = *it;
+        p.rotate(c1.alpha);
+        auto q = *it2;
+        q.rotate(c1.alpha);
+        if(intersects(c2, p + c1.center, q + c1.center)) {
+            return true;
+        }
+    }
+    return false;
+}
+template <class T, class U>
+bool intersects(const BoxCollider<T>& c1, const PolygonCollider<U>& c2) {
+    return intersects(c2, c1);
+}
+
 
 #endif
