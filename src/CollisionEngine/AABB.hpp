@@ -15,11 +15,12 @@ struct AABB {
             center{center}, width{width}, height{height} {}
 
     std::unique_ptr<sf::Shape> shape() const;
+    static bool intersects(const AABB<T>& c1, const AABB<T>& c2);
 };
 
 // Intersection entre AABBs
-template <class T, class U>
-bool intersects(const AABB<T>& c1, const AABB<U>& c2) {
+template <class T>
+bool AABB<T>::intersects(const AABB<T>& c1, const AABB<T>& c2) {
     auto d = c1.center - c2.center;
     return std::abs(d.x) <= (c1.width + c2.width) / 2
         && std::abs(d.y) <= (c1.height + c2.height) / 2;
@@ -41,8 +42,8 @@ std::ostream& operator<<(std::ostream& output, AABB<T>& a) {
     return output;
 }
 
-template <class T, class U>
-bool contains(const AABB<T>& aabb, const Vector<U>& point) {
+template <class T>
+bool contains(const AABB<T>& aabb, const Vector<T>& point) {
     auto d = aabb.center - point;
     return std::abs(d.x) <= aabb.width / 2 && std::abs(d.y) <= aabb.height / 2;
 }

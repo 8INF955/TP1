@@ -3,9 +3,13 @@
 
 #include <math.h>
 #include "Vector.hpp"
-#include "Collider.hpp"
-#include "BoxCollider.hpp"
-#include "CircleCollider.hpp"
+
+template<class T>
+class BoxCollider;
+template<class T>
+class CircleCollider;
+template<class T>
+class PolygonCollider;
 
 // Contient Segment - Vector
 template <class T, class U, class V>

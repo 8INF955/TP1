@@ -2,11 +2,10 @@
 #include <string>
 #include <chrono>
 
-#include "Vector.hpp"
 #include <cstdlib>
 #include <ctime>
 
-#include "Intersects.hpp"
+#include "CollisionEngine.hpp"
 
 float r(float min = -100, float max = 100) {
     return min + static_cast<float>(rand()) / static_cast<float>(RAND_MAX/(min-max));
@@ -87,45 +86,6 @@ void testIntersectsSegment() {
     std::cout << "Did " << k << " Segment intersections in 1s." << std::endl;
 }
 
-void testIntersectsBoxCollider() {
-    std::cout << "==== BoxCollider ====" << std::endl;
-    auto mark = "✗";
-
-    mark = "✓";
-    BoxCollider<float> box1(Vector<float>(0, 0), 2, 2, 0);
-    BoxCollider<float> box2(Vector<float>(0, 0), 2, 2, 0);
-    if(!intersects(box1, box2)) {
-        mark = "✗";
-    }
-    std::cout << "[" << mark << "] same BoxCollider" << std::endl;
-
-    mark = "✓";
-    box1 = BoxCollider<float>(Vector<float>(0, 0), float(2), float(2), float(0));
-    box2 = BoxCollider<float>(Vector<float>(0, 0), float(2), float(2), float(1.4));
-    if(!intersects(box1, box2)) {
-        mark = "✗";
-    }
-    std::cout << "[" << mark << "] turned BoxCollider" << std::endl;
-
-    mark = "✓";
-    box1 = BoxCollider<float>(Vector<float>(0, 0), float(2), float(2), float(0));
-    box2 = BoxCollider<float>(Vector<float>(2.1, 0), float(2), float(2), float(0));
-    if(intersects(box1, box2)) {
-        mark = "✗";
-    }
-    std::cout << "[" << mark << "] translated BoxCollider" << std::endl;
-
-    mark = "✓";
-    box1 = BoxCollider<float>(Vector<float>(0, 0), float(2), float(2), float(0));
-    box2 = BoxCollider<float>(Vector<float>(2.1, 0), float(2), float(2), float(1));
-    if(!intersects(box1, box2)) {
-        mark = "✗";
-    }
-    std::cout << "[" << mark << "] translated turned BoxCollider" << std::endl;
-
-}
-
 void testIntersects() {
     testIntersectsSegment();
-    testIntersectsBoxCollider();
 }
